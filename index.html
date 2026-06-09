@@ -78,21 +78,21 @@
   .resize-handle { position: absolute; right: 0; top: 0; bottom: 0; width: 7px; cursor: ew-resize; z-index: 3; }
 
   /* Block colors */
-  .bc-blue   { background: #2B7FCC; border-color: #1A5FA0; color: #fff; }
-  .bc-teal   { background: #1A9468; border-color: #0F6B4C; color: #fff; }
-  .bc-amber  { background: #D4820A; border-color: #A86208; color: #fff; }
-  .bc-coral  { background: #C94B25; border-color: #A33519; color: #fff; }
-  .bc-purple { background: #6558D4; border-color: #4A3FB8; color: #fff; }
-  .bc-green  { background: #528A18; border-color: #3A6610; color: #fff; }
-  .bc-gray   { background: #6E6C66; border-color: #52504B; color: #fff; }
+  .bc-blue   { background: #1560B0; border-color: #0E4A88; color: #fff; }
+  .bc-teal   { background: #0D7A52; border-color: #085038; color: #fff; }
+  .bc-amber  { background: #B86A00; border-color: #8C5000; color: #fff; }
+  .bc-coral  { background: #B03510; border-color: #882508; color: #fff; }
+  .bc-purple { background: #4A3BBF; border-color: #352D9A; color: #fff; }
+  .bc-green  { background: #3D6E0E; border-color: #285208; color: #fff; }
+  .bc-gray   { background: #4A4845; border-color: #333230; color: #fff; }
   @media (prefers-color-scheme: dark) {
-    .bc-blue   { background: #3B8FDC; border-color: #2B7FCC; color: #fff; }
-    .bc-teal   { background: #1EA878; border-color: #1A9468; color: #fff; }
-    .bc-amber  { background: #E8920C; border-color: #D4820A; color: #fff; }
-    .bc-coral  { background: #E05530; border-color: #C94B25; color: #fff; }
-    .bc-purple { background: #7A6EE0; border-color: #6558D4; color: #fff; }
-    .bc-green  { background: #5E9E1C; border-color: #528A18; color: #fff; }
-    .bc-gray   { background: #888780; border-color: #6E6C66; color: #fff; }
+    .bc-blue   { background: #2B7FCC; border-color: #2B7FCC; color: #fff; }
+    .bc-teal   { background: #1A9468; border-color: #1A9468; color: #fff; }
+    .bc-amber  { background: #CC7800; border-color: #D4820A; color: #fff; }
+    .bc-coral  { background: #C94B25; border-color: #C94B25; color: #fff; }
+    .bc-purple { background: #6558D4; border-color: #6558D4; color: #fff; }
+    .bc-green  { background: #528A18; border-color: #528A18; color: #fff; }
+    .bc-gray   { background: #6E6C66; border-color: #6E6C66; color: #fff; }
   }
 
   /* Now / deadline lines */
@@ -162,7 +162,7 @@
 const { useState, useEffect, useRef, useCallback } = React;
 
 const COLORS = ['blue','teal','amber','coral','purple','green','gray'];
-const CHX = { blue:'#2B7FCC', teal:'#1A9468', amber:'#D4820A', coral:'#C94B25', purple:'#6558D4', green:'#528A18', gray:'#6E6C66' };
+const CHX = { blue:'#1560B0', teal:'#0D7A52', amber:'#B86A00', coral:'#B03510', purple:'#4A3BBF', green:'#3D6E0E', gray:'#4A4845' };
 
 const DEFAULT = { days: [
   { id:'d1', label:'Demo day', badge:'DEMO DAY', bgs:'#E1F5EE', bgc:'#085041', sh:6, eh:15, dls:[{t:'12:30',l:'Arrival deadline'}], tracks:[
@@ -199,7 +199,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v11'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v12'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -523,8 +523,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v11', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v11'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v12', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v12'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
