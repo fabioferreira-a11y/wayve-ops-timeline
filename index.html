@@ -205,7 +205,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v15'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v16'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -367,14 +367,16 @@ function DayView({ day, nowFrac, onUpdateDay }) {
     const newTrack = { id: nid(), n: 'New person', blocks: [] };
     onUpdateDay({ ...day, tracks: [...day.tracks, newTrack] });
   };
-  // Move dragged track (fromId) to position before target track (toId)
-  const moveTrack = (fromId, toId) => {
+  // Move dragged track (fromId) to before/after target track (toId)
+  const moveTrack = (fromId, toId, before) => {
     const tracks = [...day.tracks];
     const fromIdx = tracks.findIndex(t => t.id === fromId);
-    const toIdx   = tracks.findIndex(t => t.id === toId);
+    let toIdx     = tracks.findIndex(t => t.id === toId);
     if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
     const [moved] = tracks.splice(fromIdx, 1);
-    tracks.splice(toIdx, 0, moved);
+    // recalculate toIdx after splice
+    toIdx = tracks.findIndex(t => t.id === toId);
+    tracks.splice(before ? toIdx : toIdx + 1, 0, moved);
     onUpdateDay({ ...day, tracks });
   };
 
@@ -430,7 +432,7 @@ function DayView({ day, nowFrac, onUpdateDay }) {
 }
 
 // ── TRACK ROW ──────────────────────────────────────────────────────────────
-function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp, onMoveDown }) {
+function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp }) {
   const [editBlock, setEditBlock] = useState(null);
   const innerRef = useRef(null);
   const rowRef = useRef(null);
@@ -452,14 +454,59 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp, onMoveDow
     setEditBlock(newBlock);
   };
 
-  // Vertical drag-to-reorder
-  const handleDragStart = e => {
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('trackId', track.id);
-    setTimeout(() => rowRef.current && rowRef.current.classList.add('dragging-row'), 0);
-  };
-  const handleDragEnd = () => {
-    rowRef.current && rowRef.current.classList.remove('dragging-row');
+  // Mousedown-based vertical reorder (no HTML drag API)
+  const handleHandleMouseDown = e => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const rowEl = rowRef.current;
+    let moved = false;
+    let ghost = null;
+
+    const onMove = ev => {
+      const dy = ev.clientY - startY;
+      if (!moved && Math.abs(dy) > 6) {
+        moved = true;
+        rowEl.style.opacity = '0.35';
+        // create ghost indicator
+        ghost = document.createElement('div');
+        ghost.style.cssText = 'position:fixed;left:0;right:0;height:3px;background:#378ADD;z-index:9999;pointer-events:none;border-radius:2px;';
+        document.body.appendChild(ghost);
+      }
+      if (!moved) return;
+
+      // find which row we are hovering over
+      const allRows = document.querySelectorAll('.track-row');
+      let targetRow = null;
+      allRows.forEach(r => {
+        if (r === rowEl) return;
+        const rect = r.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        if (ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
+          targetRow = r;
+          ghost.style.top = (ev.clientY < midY ? rect.top : rect.bottom) - 1.5 + 'px';
+          ghost.dataset.targetId = r.dataset.trackId;
+          ghost.dataset.before = ev.clientY < midY ? '1' : '0';
+        }
+      });
+      if (!targetRow && ghost) ghost.style.top = '-100px';
+    };
+
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      rowEl.style.opacity = '';
+      if (ghost) {
+        const targetId = ghost.dataset.targetId;
+        const before = ghost.dataset.before === '1';
+        ghost.remove();
+        if (targetId && targetId !== track.id) {
+          onMoveUp(track.id, targetId, before);
+        }
+      }
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   };
 
   return (
@@ -472,20 +519,9 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp, onMoveDow
           onDelete={() => { deleteBlock(editBlock.id); setEditBlock(null); }}
         />
       )}
-      <div className="track-row" ref={rowRef}
-        draggable
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragOver={e => { e.preventDefault(); rowRef.current && rowRef.current.classList.add('drag-over'); }}
-        onDragLeave={() => rowRef.current && rowRef.current.classList.remove('drag-over')}
-        onDrop={e => {
-          e.preventDefault();
-          rowRef.current && rowRef.current.classList.remove('drag-over');
-          const fromId = e.dataTransfer.getData('trackId');
-          if (fromId && fromId !== track.id) onMoveUp(fromId, track.id);
-        }}>
+      <div className="track-row" ref={rowRef} data-track-id={track.id}>
         <div className="track-name-wrap">
-          <span className="drag-handle" title="Drag to reorder">⠿</span>
+          <span className="drag-handle" title="Drag to reorder" onMouseDown={handleHandleMouseDown}>⠿</span>
           <button className="track-del-btn" onClick={onDelete} title="Remove track">×</button>
           <input className="track-name-input" defaultValue={track.n} spellCheck={false}
             onBlur={e => onUpdate({ ...track, n: e.target.value })} />
@@ -563,8 +599,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v15', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v15'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v16', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v16'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
