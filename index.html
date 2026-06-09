@@ -168,7 +168,7 @@
 const { useState, useEffect, useRef, useCallback } = React;
 
 const COLORS = ['blue','teal','amber','coral','purple','green','gray'];
-const CHX = { blue:'#0050E0', teal:'#008050', amber:'#D07000', coral:'#CC3010', purple:'#5040E0', green:'#407800', gray:'#505050' };
+const CHX = { blue:'#1464F4', teal:'#00966A', amber:'#E87C00', coral:'#E83418', purple:'#6B50F8', green:'#3D8C00', gray:'#555555' };
 const BLOCK_COLORS = {
   blue:   { bg:'#1464F4', border:'#0A4ED4', text:'#fff' },
   teal:   { bg:'#00966A', border:'#007050', text:'#fff' },
@@ -214,7 +214,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v21'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v22'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -670,8 +670,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v21', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v21'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v22', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v22'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
