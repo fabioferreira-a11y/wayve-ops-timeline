@@ -54,7 +54,7 @@
 
   /* Tracks */
   .tracks { padding: 4px 0; position: relative; }
-  .track-row { display: flex; align-items: center; min-height: 48px; padding: 1px 0; }
+  .track-row { display: flex; align-items: center; min-height: 54px; padding: 1px 0; }
   .track-name-wrap { width: 90px; min-width: 90px; display: flex; align-items: center; justify-content: flex-end; padding-right: 7px; gap: 3px; }
   .track-name-input { background: transparent; border: none; font-size: 11px; font-weight: 500; color: #5a5955; text-align: right; width: 65px; padding: 2px 0; outline: none; font-family: inherit; }
   .track-name-input:focus { border-bottom: 1px solid #378ADD; }
@@ -68,29 +68,29 @@
   .track-row.dragging-row { opacity: .4; }
   .track-row.drag-over { border-top: 2px solid #378ADD; }
 
-  .track-inner { position: relative; flex: 1; height: 44px; border-radius: 5px; background: #f0ede8; border: 1px solid rgba(0,0,0,0.08); margin-right: 8px; }
+  .track-inner { position: relative; flex: 1; height: 50px; border-radius: 5px; background: #f0ede8; border: 1px solid rgba(0,0,0,0.08); margin-right: 8px; }
   @media (prefers-color-scheme: dark) { .track-inner { background: #2c2c2a; border-color: rgba(255,255,255,0.07); } }
 
   /* Blocks */
-  .block { position: absolute; top: 3px; height: 38px; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; overflow: hidden; cursor: pointer; border: 1.5px solid transparent; user-select: none; transition: filter .1s; }
+  .block { position: absolute; top: 3px; height: 44px; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; overflow: hidden; cursor: pointer; border: 1.5px solid transparent; user-select: none; transition: filter .1s; }
   .block:hover { filter: brightness(.92); }
   .block.past { opacity: .32; }
   .block.selected { outline: 2.5px solid #378ADD; outline-offset: 1px; }
   .block-inner { overflow: hidden; pointer-events: none; flex: 1; min-width: 0; }
-  .block-label { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; letter-spacing: .01em; }
-  .block-sub { font-size: 10px; font-weight: 600; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .block-label { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; letter-spacing: .01em; }
+  .block-sub { font-size: 11px; font-weight: 600; opacity: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .block-del { position: absolute; top: 1px; right: 2px; background: rgba(0,0,0,.22); border: none; border-radius: 3px; width: 13px; height: 13px; font-size: 9px; cursor: pointer; display: none; align-items: center; justify-content: center; color: #fff; padding: 0; line-height: 1; z-index: 4; }
   .block:hover .block-del { display: flex; }
   .resize-handle { position: absolute; right: 0; top: 0; bottom: 0; width: 7px; cursor: ew-resize; z-index: 3; }
 
   /* Block colors */
-  .bc-blue   { background: #0050E0; border-color: #0040B8; color: #fff; }
-  .bc-teal   { background: #008050; border-color: #006040; color: #fff; }
-  .bc-amber  { background: #D07000; border-color: #A85800; color: #fff; }
-  .bc-coral  { background: #CC3010; border-color: #A02008; color: #fff; }
-  .bc-purple { background: #5040E0; border-color: #3C2EC0; color: #fff; }
-  .bc-green  { background: #407800; border-color: #305C00; color: #fff; }
-  .bc-gray   { background: #505050; border-color: #383838; color: #fff; }
+  .bc-blue   { background: #1464F4 !important; border-color: #0A4ED4 !important; color: #fff !important; }
+  .bc-teal   { background: #00966A !important; border-color: #007050 !important; color: #fff !important; }
+  .bc-amber  { background: #E87C00 !important; border-color: #C46400 !important; color: #fff !important; }
+  .bc-coral  { background: #E83418 !important; border-color: #C02410 !important; color: #fff !important; }
+  .bc-purple { background: #6B50F8 !important; border-color: #5038D8 !important; color: #fff !important; }
+  .bc-green  { background: #3D8C00 !important; border-color: #2C6800 !important; color: #fff !important; }
+  .bc-gray   { background: #5A5A5A !important; border-color: #404040 !important; color: #fff !important; }
   @media (prefers-color-scheme: dark) {
     .bc-blue   { background: #1E70FF; border-color: #1550CC; color: #fff; }
     .bc-teal   { background: #00A060; border-color: #008048; color: #fff; }
@@ -205,7 +205,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v18'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v19'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -640,8 +640,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v18', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v18'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v19', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v19'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
