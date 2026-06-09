@@ -205,7 +205,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v16'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v18'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -270,47 +270,87 @@ function Modal({ block, onClose, onSave, onDelete }) {
 }
 
 // ── BLOCK ──────────────────────────────────────────────────────────────────
-function Block({ block, day, track, onEdit, onDelete, onChange, nowFrac }) {
-  const dragRef = useRef({ dragging: false, moved: false });
-  const containerRef = useRef(null);
-
+function Block({ block, day, track, onEdit, onDelete, onChange, onMoveToTrack, nowFrac }) {
   const fs = frac(block.s, day.sh, day.eh);
   const fe = frac(block.e, day.sh, day.eh);
   const isPast = nowFrac !== null && fe < nowFrac && day.id === 'd1';
-
-  // find container (parent .track-inner)
-  const getContainer = el => el.closest('.track-inner');
 
   const handleMouseDown = e => {
     if (e.target.classList.contains('resize-handle') || e.target.classList.contains('block-del')) return;
     if (e.button !== 0) return;
     e.preventDefault();
-    const container = getContainer(e.currentTarget);
+    const container = e.currentTarget.closest('.track-inner');
     if (!container) return;
     const rect = container.getBoundingClientRect();
     const total = (day.eh - day.sh) * 60;
-    const startX = e.clientX;
-    const origLeft = fs;
-    const width = fe - fs;
-    dragRef.current = { dragging: false, moved: false };
+    const startX = e.clientX, startY = e.clientY;
+    const origLeft = fs, width = fe - fs;
+    let moved = false, crossTrack = false;
+
+    // ghost block that follows cursor when dragging across tracks
+    const ghost = document.createElement('div');
+    ghost.style.cssText = `position:fixed;height:34px;background:rgba(55,138,221,0.25);border:2px dashed #378ADD;border-radius:5px;pointer-events:none;z-index:500;display:none;min-width:60px;align-items:center;padding:0 8px;font-size:11px;font-weight:600;color:#378ADD;`;
+    ghost.textContent = block.l;
+    document.body.appendChild(ghost);
+
+    // highlight line for target track
+    const line = document.createElement('div');
+    line.style.cssText = 'position:fixed;left:0;right:0;height:2px;background:#378ADD;z-index:499;pointer-events:none;display:none;';
+    document.body.appendChild(line);
+
+    let targetTrackId = null;
 
     const onMove = ev => {
-      const dx = (ev.clientX - startX) / rect.width;
-      if (!dragRef.current.dragging && Math.abs(ev.clientX - startX) > 5) {
-        dragRef.current.dragging = true;
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (!moved && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) moved = true;
+      if (!moved) return;
+
+      const absDy = Math.abs(dy), absDx = Math.abs(dx);
+
+      // if mostly vertical → cross-track mode
+      if (absDy > 20 && absDy > absDx * 0.8) {
+        crossTrack = true;
+        ghost.style.display = 'flex';
+        ghost.style.left = (ev.clientX - 40) + 'px';
+        ghost.style.top = (ev.clientY - 17) + 'px';
+        ghost.style.width = Math.max((width) * rect.width, 80) + 'px';
+        line.style.display = 'block';
+
+        // find target track-inner under cursor
+        targetTrackId = null;
+        document.querySelectorAll('.track-inner').forEach(ti => {
+          const r = ti.getBoundingClientRect();
+          if (ev.clientY >= r.top - 10 && ev.clientY <= r.bottom + 10) {
+            const tid = ti.dataset.trackId;
+            if (tid !== track.id) {
+              targetTrackId = tid;
+              line.style.top = (r.top - 1) + 'px';
+              line.style.display = 'block';
+            }
+          }
+        });
+        if (!targetTrackId) line.style.display = 'none';
+      } else {
+        // horizontal drag — update position in same track
+        crossTrack = false;
+        ghost.style.display = 'none';
+        line.style.display = 'none';
+        targetTrackId = null;
+        const nl = Math.max(0, Math.min(origLeft + dx / rect.width, 1 - width));
+        const ns = Math.round((nl * total + day.sh * 60) / 5) * 5;
+        const dur = t2m(block.e) - t2m(block.s);
+        onChange({ ...block, s: m2t(ns), e: m2t(ns + dur) });
       }
-      if (!dragRef.current.dragging) return;
-      dragRef.current.moved = true;
-      const nl = Math.max(0, Math.min(origLeft + dx, 1 - width));
-      const ns = Math.round((nl * total + day.sh * 60) / 5) * 5;
-      const dur = t2m(block.e) - t2m(block.s);
-      onChange({ ...block, s: m2t(ns), e: m2t(ns + dur) });
     };
 
-    const onUp = () => {
+    const onUp = ev => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      if (!dragRef.current.moved) onEdit();
+      ghost.remove(); line.remove();
+      if (!moved) { onEdit(); return; }
+      if (crossTrack && targetTrackId) {
+        onMoveToTrack(block, targetTrackId);
+      }
     };
 
     document.addEventListener('mousemove', onMove);
@@ -319,18 +359,15 @@ function Block({ block, day, track, onEdit, onDelete, onChange, nowFrac }) {
 
   const handleResizeDown = e => {
     e.preventDefault(); e.stopPropagation();
-    const container = getContainer(e.currentTarget);
+    const container = e.currentTarget.closest('.track-inner');
     if (!container) return;
     const rect = container.getBoundingClientRect();
     const total = (day.eh - day.sh) * 60;
-    const startX = e.clientX;
-    const origEf = fe;
-
+    const startX = e.clientX, origEf = fe;
     const onMove = ev => {
       const dx = (ev.clientX - startX) / rect.width;
       const nef = Math.max(fs + 0.02, Math.min(1, origEf + dx));
-      const nem = Math.round((nef * total + day.sh * 60) / 5) * 5;
-      onChange({ ...block, e: m2t(nem) });
+      onChange({ ...block, e: m2t(Math.round((nef * total + day.sh * 60) / 5) * 5) });
     };
     const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
     document.addEventListener('mousemove', onMove);
@@ -358,6 +395,15 @@ function Block({ block, day, track, onEdit, onDelete, onChange, nowFrac }) {
 function DayView({ day, nowFrac, onUpdateDay }) {
   const updateTrack = (tid, newTrack) => {
     onUpdateDay({ ...day, tracks: day.tracks.map(t => t.id === tid ? newTrack : t) });
+  };
+  // Move a block from its current track to another track
+  const moveBlockToTrack = (block, toTrackId) => {
+    const newTracks = day.tracks.map(t => {
+      if (t.id === block._fromTrack) return { ...t, blocks: t.blocks.filter(b => b.id !== block.id) };
+      if (t.id === toTrackId) return { ...t, blocks: [...t.blocks, block] };
+      return t;
+    });
+    onUpdateDay({ ...day, tracks: newTracks });
   };
   const deleteTrack = tid => {
     if (day.tracks.length <= 1) return;
@@ -400,7 +446,8 @@ function DayView({ day, nowFrac, onUpdateDay }) {
             <TrackRow key={track.id} track={track} day={day} nowFrac={nowFrac}
               onUpdate={t => updateTrack(track.id, t)}
               onDelete={() => deleteTrack(track.id)}
-              onMoveUp={moveTrack} />
+              onMoveUp={moveTrack}
+              onMoveToTrack={(block, toId) => moveBlockToTrack({...block, _fromTrack: track.id}, toId)} />
           ))}
           {day.dls && day.dls.map((dl, i) => {
             const f = frac(dl.t, day.sh, day.eh);
@@ -432,7 +479,7 @@ function DayView({ day, nowFrac, onUpdateDay }) {
 }
 
 // ── TRACK ROW ──────────────────────────────────────────────────────────────
-function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp }) {
+function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp, onMoveToTrack }) {
   const [editBlock, setEditBlock] = useState(null);
   const innerRef = useRef(null);
   const rowRef = useRef(null);
@@ -454,54 +501,47 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp }) {
     setEditBlock(newBlock);
   };
 
-  // Mousedown-based vertical reorder (no HTML drag API)
+  // Mousedown vertical reorder
   const handleHandleMouseDown = e => {
     e.preventDefault();
-    const startY = e.clientY;
     const rowEl = rowRef.current;
-    let moved = false;
-    let ghost = null;
+    let didMove = false;
+
+    // highlight line element
+    const line = document.createElement('div');
+    line.style.cssText = 'position:fixed;left:0;right:0;height:3px;background:#378ADD;z-index:9999;pointer-events:none;border-radius:2px;display:none;';
+    document.body.appendChild(line);
+
+    let dropTargetId = null;
+    let dropBefore = true;
 
     const onMove = ev => {
-      const dy = ev.clientY - startY;
-      if (!moved && Math.abs(dy) > 6) {
-        moved = true;
-        rowEl.style.opacity = '0.35';
-        // create ghost indicator
-        ghost = document.createElement('div');
-        ghost.style.cssText = 'position:fixed;left:0;right:0;height:3px;background:#378ADD;z-index:9999;pointer-events:none;border-radius:2px;';
-        document.body.appendChild(ghost);
-      }
-      if (!moved) return;
-
-      // find which row we are hovering over
-      const allRows = document.querySelectorAll('.track-row');
-      let targetRow = null;
-      allRows.forEach(r => {
+      if (!didMove) { didMove = true; rowEl.style.opacity = '0.3'; line.style.display = 'block'; }
+      document.querySelectorAll('.track-row').forEach(r => {
+        r.style.borderTop = '';
+        r.style.borderBottom = '';
+      });
+      dropTargetId = null;
+      document.querySelectorAll('.track-row').forEach(r => {
         if (r === rowEl) return;
         const rect = r.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
         if (ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
-          targetRow = r;
-          ghost.style.top = (ev.clientY < midY ? rect.top : rect.bottom) - 1.5 + 'px';
-          ghost.dataset.targetId = r.dataset.trackId;
-          ghost.dataset.before = ev.clientY < midY ? '1' : '0';
+          const mid = rect.top + rect.height / 2;
+          dropBefore = ev.clientY < mid;
+          dropTargetId = r.dataset.trackId;
+          line.style.top = (dropBefore ? rect.top : rect.bottom) - 1.5 + 'px';
         }
       });
-      if (!targetRow && ghost) ghost.style.top = '-100px';
+      if (!dropTargetId) line.style.display = 'none';
     };
 
     const onUp = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       rowEl.style.opacity = '';
-      if (ghost) {
-        const targetId = ghost.dataset.targetId;
-        const before = ghost.dataset.before === '1';
-        ghost.remove();
-        if (targetId && targetId !== track.id) {
-          onMoveUp(track.id, targetId, before);
-        }
+      line.remove();
+      if (dropTargetId && dropTargetId !== track.id) {
+        onMoveUp(track.id, dropTargetId, dropBefore);
       }
     };
 
@@ -526,14 +566,15 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp }) {
           <input className="track-name-input" defaultValue={track.n} spellCheck={false}
             onBlur={e => onUpdate({ ...track, n: e.target.value })} />
         </div>
-        <div className="track-inner" ref={innerRef} style={{ position: 'relative', cursor: 'crosshair' }}
+        <div className="track-inner" ref={innerRef} data-track-id={track.id} style={{ position: 'relative', cursor: 'crosshair' }}
           onClick={handleTrackClick}>
           {track.blocks.map(block => (
             <Block key={block.id} block={block} day={day} track={track}
               nowFrac={nowF}
               onEdit={() => setEditBlock(block)}
               onDelete={() => deleteBlock(block.id)}
-              onChange={nb => updateBlock(block.id, nb)} />
+              onChange={nb => updateBlock(block.id, nb)}
+              onMoveToTrack={onMoveToTrack} />
           ))}
           {nowF !== null && nowF > 0 && nowF < 1 && (
             <div className="now-line" style={{ left: (nowF * 100) + '%' }}>
@@ -599,8 +640,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v16', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v16'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v18', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v18'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
