@@ -165,17 +165,7 @@ const COLORS = ['blue','teal','amber','coral','purple','green','gray'];
 const CHX = { blue:'#85B7EB', teal:'#5DCAA5', amber:'#EF9F27', coral:'#F0997B', purple:'#AFA9EC', green:'#97C459', gray:'#B4B2A9' };
 
 const DEFAULT = { days: [
-  { id:'d0', label:'Preparation day', badge:'TODAY', bgs:'#E6F1FB', bgc:'#0C447C', sh:7, eh:19, dls:[], tracks:[
-    { id:'t1', n:'Daniel', blocks:[
-      { id:'b1', s:'07:00', e:'09:30', c:'blue', l:'CLA validation', sub:'Zuffenhausen route', no:'Drives the Zuffenhausen route in the CLA to validate the path. Return ~09:30.' },
-      { id:'b2', s:'09:30', e:'13:00', c:'blue', l:'Handover → Karlheinz', sub:'Zuffenhausen', no:'Hands over the car to Karlheinz, accompanies familiarisation run.' },
-    ]},
-    { id:'t2', n:'Marius', blocks:[{ id:'b3', s:'09:00', e:'13:00', c:'teal', l:'Familiarisation', sub:'Zuffenhausen route', no:'Starts shift 09:00, drives to Zuffenhausen to learn the demo route.' }]},
-    { id:'t3', n:'Ahmed', blocks:[{ id:'b4', s:'14:00', e:'18:30', c:'amber', l:'Valeo validation', sub:'3–4 runs', no:'Runs the Valeo route at least 3–4 times for testing and validation.' }]},
-    { id:'t4', n:'Copis', blocks:[] },
-    { id:'t5', n:'Techs', blocks:[{ id:'b5', s:'09:00', e:'18:00', c:'gray', l:'Fleet cleaning', sub:'N5, N7, N9, CLA?', no:'Clean vehicles N5, N7, N9 and possibly the CLA.' }]},
-  ]},
-  { id:'d1', label:'Demo day', badge:'TOMORROW', bgs:'#E1F5EE', bgc:'#085041', sh:6, eh:15, dls:[{t:'12:30',l:'Arrival deadline'}], tracks:[
+  { id:'d1', label:'Demo day', badge:'DEMO DAY', bgs:'#E1F5EE', bgc:'#085041', sh:6, eh:15, dls:[{t:'12:30',l:'Arrival deadline'}], tracks:[
     { id:'t6', n:'Recce', blocks:[{ id:'b6', s:'06:30', e:'08:00', c:'gray', l:'Morning recce', sub:'Full team', no:'Route reconnaissance and final check before demos.' }]},
     { id:'t7', n:'Daniel', blocks:[
       { id:'b7', s:'09:00', e:'10:00', c:'blue', l:'Bosch demo', sub:'Runs', no:'Daniel runs the Bosch demo. Afterwards travels to Zuffenhausen for a final recce.' },
@@ -209,7 +199,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v8'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v9'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -280,7 +270,7 @@ function Block({ block, day, track, onEdit, onDelete, onChange, nowFrac }) {
 
   const fs = frac(block.s, day.sh, day.eh);
   const fe = frac(block.e, day.sh, day.eh);
-  const isPast = nowFrac !== null && fe < nowFrac && day.id === 'd0';
+  const isPast = nowFrac !== null && fe < nowFrac && day.id === 'd1';
 
   // find container (parent .track-inner)
   const getContainer = el => el.closest('.track-inner');
@@ -433,7 +423,7 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete }) {
     onUpdate({ ...track, blocks: [...track.blocks, { id: nid(), s: m2t(mid * 60), e: m2t(mid * 60 + 60), c: 'gray', l: 'New block', sub: '', no: '' }] });
   };
 
-  const nowF = day.id === 'd0' ? nowFrac : null;
+  const nowF = day.id === 'd1' ? nowFrac : null;
 
   return (
     <>
@@ -524,8 +514,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v8', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v8'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v9', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v9'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
@@ -587,7 +577,7 @@ function App() {
 
       <div className="main">
         {data.days.map((day, i) => (
-          <DayView key={day.id} day={day} nowFrac={i === 0 ? nowFrac : null}
+          <DayView key={day.id} day={day} nowFrac={nowFrac}
             onUpdateDay={updateDay} />
         ))}
       </div>
