@@ -92,13 +92,13 @@
   .bc-green  { background: #3D8C00 !important; border-color: #2C6800 !important; color: #fff !important; }
   .bc-gray   { background: #5A5A5A !important; border-color: #404040 !important; color: #fff !important; }
   @media (prefers-color-scheme: dark) {
-    .bc-blue   { background: #1E70FF; border-color: #1550CC; color: #fff; }
-    .bc-teal   { background: #00A060; border-color: #008048; color: #fff; }
-    .bc-amber  { background: #E08000; border-color: #B86600; color: #fff; }
-    .bc-coral  { background: #E03818; border-color: #B82A10; color: #fff; }
-    .bc-purple { background: #6850F0; border-color: #5040D0; color: #fff; }
-    .bc-green  { background: #508800; border-color: #386600; color: #fff; }
-    .bc-gray   { background: #686868; border-color: #505050; color: #fff; }
+    .bc-blue   { background: #1464F4 !important; border-color: #0A4ED4 !important; color: #fff !important; }
+    .bc-teal   { background: #00966A !important; border-color: #007050 !important; color: #fff !important; }
+    .bc-amber  { background: #E87C00 !important; border-color: #C46400 !important; color: #fff !important; }
+    .bc-coral  { background: #E83418 !important; border-color: #C02410 !important; color: #fff !important; }
+    .bc-purple { background: #6B50F8 !important; border-color: #5038D8 !important; color: #fff !important; }
+    .bc-green  { background: #3D8C00 !important; border-color: #2C6800 !important; color: #fff !important; }
+    .bc-gray   { background: #5A5A5A !important; border-color: #404040 !important; color: #fff !important; }
   }
 
   /* Now / deadline lines */
@@ -205,7 +205,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v19'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v20'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -640,8 +640,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v19', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v19'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v20', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v20'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
