@@ -199,7 +199,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v9'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v10'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -415,22 +415,31 @@ function DayView({ day, nowFrac, onUpdateDay }) {
 // ── TRACK ROW ──────────────────────────────────────────────────────────────
 function TrackRow({ track, day, nowFrac, onUpdate, onDelete }) {
   const [editBlock, setEditBlock] = useState(null);
+  const innerRef = useRef(null);
 
   const updateBlock = (bid, newBlk) => onUpdate({ ...track, blocks: track.blocks.map(b => b.id === bid ? newBlk : b) });
   const deleteBlock = bid => onUpdate({ ...track, blocks: track.blocks.filter(b => b.id !== bid) });
-  const addBlock = () => {
-    const mid = day.sh + Math.floor((day.eh - day.sh) / 2);
-    onUpdate({ ...track, blocks: [...track.blocks, { id: nid(), s: m2t(mid * 60), e: m2t(mid * 60 + 60), c: 'gray', l: 'New block', sub: '', no: '' }] });
-  };
 
   const nowF = day.id === 'd1' ? nowFrac : null;
+
+  const handleTrackClick = e => {
+    if (e.target.closest('.block')) return;
+    const rect = innerRef.current.getBoundingClientRect();
+    const clickFrac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const total = (day.eh - day.sh) * 60;
+    const startMins = Math.round((clickFrac * total + day.sh * 60) / 5) * 5;
+    const endMins = Math.min(startMins + 60, day.eh * 60);
+    const newBlock = { id: nid(), s: m2t(startMins), e: m2t(endMins), c: 'blue', l: '', sub: '', no: '' };
+    onUpdate({ ...track, blocks: [...track.blocks, newBlock] });
+    setEditBlock(newBlock);
+  };
 
   return (
     <>
       {editBlock && (
         <Modal
           block={editBlock}
-          onClose={() => setEditBlock(null)}
+          onClose={() => { deleteBlock(editBlock.id); setEditBlock(null); }}
           onSave={form => { updateBlock(editBlock.id, { ...editBlock, ...form }); setEditBlock(null); }}
           onDelete={() => { deleteBlock(editBlock.id); setEditBlock(null); }}
         />
@@ -441,7 +450,8 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete }) {
           <input className="track-name-input" defaultValue={track.n} spellCheck={false}
             onBlur={e => onUpdate({ ...track, n: e.target.value })} />
         </div>
-        <div className="track-inner" style={{ position: 'relative' }}>
+        <div className="track-inner" ref={innerRef} style={{ position: 'relative', cursor: 'crosshair' }}
+          onClick={handleTrackClick}>
           {track.blocks.map(block => (
             <Block key={block.id} block={block} day={day} track={track}
               nowFrac={nowF}
@@ -455,7 +465,6 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete }) {
             </div>
           )}
         </div>
-        <button className="add-block-btn" onClick={addBlock} title="Add block">+</button>
       </div>
     </>
   );
@@ -514,8 +523,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v9', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v9'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v10', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v10'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
