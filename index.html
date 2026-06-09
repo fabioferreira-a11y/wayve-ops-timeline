@@ -169,6 +169,15 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 const COLORS = ['blue','teal','amber','coral','purple','green','gray'];
 const CHX = { blue:'#0050E0', teal:'#008050', amber:'#D07000', coral:'#CC3010', purple:'#5040E0', green:'#407800', gray:'#505050' };
+const BLOCK_COLORS = {
+  blue:   { bg:'#1464F4', border:'#0A4ED4', text:'#fff' },
+  teal:   { bg:'#00966A', border:'#007050', text:'#fff' },
+  amber:  { bg:'#E87C00', border:'#C46400', text:'#fff' },
+  coral:  { bg:'#E83418', border:'#C02410', text:'#fff' },
+  purple: { bg:'#6B50F8', border:'#5038D8', text:'#fff' },
+  green:  { bg:'#3D8C00', border:'#2C6800', text:'#fff' },
+  gray:   { bg:'#555555', border:'#404040', text:'#fff' },
+};
 
 const DEFAULT = { days: [
   { id:'d1', label:'Demo day', badge:'DEMO DAY', bgs:'#E1F5EE', bgc:'#085041', sh:6, eh:15, dls:[{t:'12:30',l:'Arrival deadline'}], tracks:[
@@ -205,13 +214,13 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v20'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v21'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
 // ── MODAL ──────────────────────────────────────────────────────────────────
 function Modal({ block, onClose, onSave, onDelete }) {
-  const [form, setForm] = useState({ l: block.l, sub: block.sub || '', s: block.s, e: block.e, no: block.no || '', c: block.c });
+  const [form, setForm] = useState({ l: block.l, sub: block.sub || '', s: block.s, e: block.e, no: block.no || '', c: block.c, vehicle: block.vehicle || '' });
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   useEffect(() => {
@@ -246,8 +255,20 @@ function Modal({ block, onClose, onSave, onDelete }) {
           </div>
         </div>
         <div className="field">
+          <label>Vehicle</label>
+          <select value={form.vehicle||''} onChange={e => set('vehicle', e.target.value)}
+            style={{width:'100%',background:'#f0ede8',border:'1px solid rgba(0,0,0,0.1)',borderRadius:7,padding:'7px 10px',fontSize:13,color:'#1a1a18',fontFamily:'inherit',outline:'none'}}>
+            <option value="">— No vehicle —</option>
+            <option value="N5">N5</option>
+            <option value="N7">N7</option>
+            <option value="N9">N9</option>
+            <option value="CLA">CLA</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div className="field">
           <label>Notes</label>
-          <textarea value={form.no} onChange={e => set('no', e.target.value)} placeholder="Car, status, notes…" />
+          <textarea value={form.no} onChange={e => set('no', e.target.value)} placeholder="Status, notes…" />
         </div>
         <div className="field">
           <label>Color</label>
@@ -374,16 +395,25 @@ function Block({ block, day, track, onEdit, onDelete, onChange, onMoveToTrack, n
     document.addEventListener('mouseup', onUp);
   };
 
+  const col = BLOCK_COLORS[block.c] || BLOCK_COLORS.gray;
   return (
     <div
-      className={`block bc-${block.c}${isPast ? ' past' : ''}`}
-      style={{ left: (fs * 100) + '%', width: Math.max((fe - fs) * 100, 0.5) + '%' }}
+      className={`block${isPast ? ' past' : ''}`}
+      style={{
+        left: (fs * 100) + '%',
+        width: Math.max((fe - fs) * 100, 0.5) + '%',
+        background: col.bg,
+        borderColor: col.border,
+        color: col.text,
+        opacity: isPast ? 0.35 : 1,
+      }}
       title={block.no || block.l}
       onMouseDown={handleMouseDown}
     >
-      <div className="block-inner">
-        <div className="block-label">{block.l}</div>
-        {block.sub && <div className="block-sub">{block.sub}</div>}
+      <div className="block-inner" style={{overflow:'hidden',flex:1,minWidth:0,pointerEvents:'none'}}>
+        <div style={{fontSize:14,fontWeight:800,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:1.2,letterSpacing:'.01em',textShadow:'0 1px 2px rgba(0,0,0,.25)'}}>{block.l}</div>
+        {block.sub && <div style={{fontSize:11,fontWeight:600,opacity:.9,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{block.sub}</div>}
+        {block.vehicle && <div style={{fontSize:10,fontWeight:700,opacity:.85,whiteSpace:'nowrap',background:'rgba(0,0,0,.18)',display:'inline-block',padding:'1px 5px',borderRadius:3,marginTop:1}}>🚗 {block.vehicle}</div>}
       </div>
       <button className="block-del" onClick={e => { e.stopPropagation(); onDelete(); }}>×</button>
       <div className="resize-handle" onMouseDown={handleResizeDown} />
@@ -496,7 +526,7 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp, onMoveToT
     const total = (day.eh - day.sh) * 60;
     const startMins = Math.round((clickFrac * total + day.sh * 60) / 5) * 5;
     const endMins = Math.min(startMins + 60, day.eh * 60);
-    const newBlock = { id: nid(), s: m2t(startMins), e: m2t(endMins), c: 'blue', l: '', sub: '', no: '' };
+    const newBlock = { id: nid(), s: m2t(startMins), e: m2t(endMins), c: 'blue', l: '', sub: '', no: '', vehicle: '' };
     onUpdate({ ...track, blocks: [...track.blocks, newBlock] });
     setEditBlock(newBlock);
   };
@@ -640,8 +670,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v20', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v20'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v21', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v21'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
