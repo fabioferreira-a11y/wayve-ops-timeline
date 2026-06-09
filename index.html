@@ -54,7 +54,7 @@
 
   /* Tracks */
   .tracks { padding: 4px 0; position: relative; }
-  .track-row { display: flex; align-items: center; min-height: 42px; padding: 1px 0; }
+  .track-row { display: flex; align-items: center; min-height: 48px; padding: 1px 0; }
   .track-name-wrap { width: 90px; min-width: 90px; display: flex; align-items: center; justify-content: flex-end; padding-right: 7px; gap: 3px; }
   .track-name-input { background: transparent; border: none; font-size: 11px; font-weight: 500; color: #5a5955; text-align: right; width: 65px; padding: 2px 0; outline: none; font-family: inherit; }
   .track-name-input:focus { border-bottom: 1px solid #378ADD; }
@@ -62,37 +62,43 @@
   .track-del-btn { opacity: 0; background: none; border: none; cursor: pointer; color: #888; font-size: 14px; padding: 0 2px; line-height: 1; transition: opacity .15s; }
   .track-row:hover .track-del-btn { opacity: 1; }
   .track-del-btn:hover { color: #E24B4A; }
-  .track-inner { position: relative; flex: 1; height: 38px; border-radius: 5px; background: #f0ede8; border: 1px solid rgba(0,0,0,0.08); margin-right: 32px; }
+  /* Vertical drag handle */
+  .drag-handle { cursor: ns-resize; color: #bbb; font-size: 13px; padding: 0 4px 0 2px; line-height: 1; user-select: none; flex-shrink: 0; }
+  .drag-handle:hover { color: #666; }
+  .track-row.dragging-row { opacity: .4; }
+  .track-row.drag-over { border-top: 2px solid #378ADD; }
+
+  .track-inner { position: relative; flex: 1; height: 44px; border-radius: 5px; background: #f0ede8; border: 1px solid rgba(0,0,0,0.08); margin-right: 32px; }
   @media (prefers-color-scheme: dark) { .track-inner { background: #2c2c2a; border-color: rgba(255,255,255,0.07); } }
 
   /* Blocks */
-  .block { position: absolute; top: 3px; height: 32px; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; overflow: hidden; cursor: pointer; border: 1.5px solid transparent; user-select: none; transition: filter .1s; }
+  .block { position: absolute; top: 3px; height: 38px; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; overflow: hidden; cursor: pointer; border: 1.5px solid transparent; user-select: none; transition: filter .1s; }
   .block:hover { filter: brightness(.92); }
   .block.past { opacity: .32; }
   .block.selected { outline: 2.5px solid #378ADD; outline-offset: 1px; }
   .block-inner { overflow: hidden; pointer-events: none; flex: 1; min-width: 0; }
-  .block-label { font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; letter-spacing: .01em; }
-  .block-sub { font-size: 10px; font-weight: 500; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .block-label { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; letter-spacing: .01em; }
+  .block-sub { font-size: 10px; font-weight: 600; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .block-del { position: absolute; top: 1px; right: 2px; background: rgba(0,0,0,.22); border: none; border-radius: 3px; width: 13px; height: 13px; font-size: 9px; cursor: pointer; display: none; align-items: center; justify-content: center; color: #fff; padding: 0; line-height: 1; z-index: 4; }
   .block:hover .block-del { display: flex; }
   .resize-handle { position: absolute; right: 0; top: 0; bottom: 0; width: 7px; cursor: ew-resize; z-index: 3; }
 
   /* Block colors */
-  .bc-blue   { background: #1560B0; border-color: #0E4A88; color: #fff; }
-  .bc-teal   { background: #0D7A52; border-color: #085038; color: #fff; }
-  .bc-amber  { background: #B86A00; border-color: #8C5000; color: #fff; }
-  .bc-coral  { background: #B03510; border-color: #882508; color: #fff; }
-  .bc-purple { background: #4A3BBF; border-color: #352D9A; color: #fff; }
-  .bc-green  { background: #3D6E0E; border-color: #285208; color: #fff; }
-  .bc-gray   { background: #4A4845; border-color: #333230; color: #fff; }
+  .bc-blue   { background: #0050E0; border-color: #0040B8; color: #fff; }
+  .bc-teal   { background: #008050; border-color: #006040; color: #fff; }
+  .bc-amber  { background: #D07000; border-color: #A85800; color: #fff; }
+  .bc-coral  { background: #CC3010; border-color: #A02008; color: #fff; }
+  .bc-purple { background: #5040E0; border-color: #3C2EC0; color: #fff; }
+  .bc-green  { background: #407800; border-color: #305C00; color: #fff; }
+  .bc-gray   { background: #505050; border-color: #383838; color: #fff; }
   @media (prefers-color-scheme: dark) {
-    .bc-blue   { background: #2B7FCC; border-color: #2B7FCC; color: #fff; }
-    .bc-teal   { background: #1A9468; border-color: #1A9468; color: #fff; }
-    .bc-amber  { background: #CC7800; border-color: #D4820A; color: #fff; }
-    .bc-coral  { background: #C94B25; border-color: #C94B25; color: #fff; }
-    .bc-purple { background: #6558D4; border-color: #6558D4; color: #fff; }
-    .bc-green  { background: #528A18; border-color: #528A18; color: #fff; }
-    .bc-gray   { background: #6E6C66; border-color: #6E6C66; color: #fff; }
+    .bc-blue   { background: #1E70FF; border-color: #1550CC; color: #fff; }
+    .bc-teal   { background: #00A060; border-color: #008048; color: #fff; }
+    .bc-amber  { background: #E08000; border-color: #B86600; color: #fff; }
+    .bc-coral  { background: #E03818; border-color: #B82A10; color: #fff; }
+    .bc-purple { background: #6850F0; border-color: #5040D0; color: #fff; }
+    .bc-green  { background: #508800; border-color: #386600; color: #fff; }
+    .bc-gray   { background: #686868; border-color: #505050; color: #fff; }
   }
 
   /* Now / deadline lines */
@@ -162,7 +168,7 @@
 const { useState, useEffect, useRef, useCallback } = React;
 
 const COLORS = ['blue','teal','amber','coral','purple','green','gray'];
-const CHX = { blue:'#1560B0', teal:'#0D7A52', amber:'#B86A00', coral:'#B03510', purple:'#4A3BBF', green:'#3D6E0E', gray:'#4A4845' };
+const CHX = { blue:'#0050E0', teal:'#008050', amber:'#D07000', coral:'#CC3010', purple:'#5040E0', green:'#407800', gray:'#505050' };
 
 const DEFAULT = { days: [
   { id:'d1', label:'Demo day', badge:'DEMO DAY', bgs:'#E1F5EE', bgc:'#085041', sh:6, eh:15, dls:[{t:'12:30',l:'Arrival deadline'}], tracks:[
@@ -199,7 +205,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v12'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v13'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -361,6 +367,16 @@ function DayView({ day, nowFrac, onUpdateDay }) {
     const newTrack = { id: nid(), n: 'New person', blocks: [] };
     onUpdateDay({ ...day, tracks: [...day.tracks, newTrack] });
   };
+  // Move dragged track (fromId) to position before target track (toId)
+  const moveTrack = (fromId, toId) => {
+    const tracks = [...day.tracks];
+    const fromIdx = tracks.findIndex(t => t.id === fromId);
+    const toIdx   = tracks.findIndex(t => t.id === toId);
+    if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
+    const [moved] = tracks.splice(fromIdx, 1);
+    tracks.splice(toIdx, 0, moved);
+    onUpdateDay({ ...day, tracks });
+  };
 
   const seen = new Set();
   day.tracks.forEach(tr => tr.blocks.forEach(b => seen.add(b.c)));
@@ -381,7 +397,8 @@ function DayView({ day, nowFrac, onUpdateDay }) {
           {day.tracks.map(track => (
             <TrackRow key={track.id} track={track} day={day} nowFrac={nowFrac}
               onUpdate={t => updateTrack(track.id, t)}
-              onDelete={() => deleteTrack(track.id)} />
+              onDelete={() => deleteTrack(track.id)}
+              onMoveUp={moveTrack} />
           ))}
           {day.dls && day.dls.map((dl, i) => {
             const f = frac(dl.t, day.sh, day.eh);
@@ -413,9 +430,10 @@ function DayView({ day, nowFrac, onUpdateDay }) {
 }
 
 // ── TRACK ROW ──────────────────────────────────────────────────────────────
-function TrackRow({ track, day, nowFrac, onUpdate, onDelete }) {
+function TrackRow({ track, day, nowFrac, onUpdate, onDelete, onMoveUp, onMoveDown }) {
   const [editBlock, setEditBlock] = useState(null);
   const innerRef = useRef(null);
+  const rowRef = useRef(null);
 
   const updateBlock = (bid, newBlk) => onUpdate({ ...track, blocks: track.blocks.map(b => b.id === bid ? newBlk : b) });
   const deleteBlock = bid => onUpdate({ ...track, blocks: track.blocks.filter(b => b.id !== bid) });
@@ -423,7 +441,7 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete }) {
   const nowF = day.id === 'd1' ? nowFrac : null;
 
   const handleTrackClick = e => {
-    if (e.target.closest('.block')) return;
+    if (e.target.closest('.block') || e.target.closest('.drag-handle')) return;
     const rect = innerRef.current.getBoundingClientRect();
     const clickFrac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     const total = (day.eh - day.sh) * 60;
@@ -432,6 +450,16 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete }) {
     const newBlock = { id: nid(), s: m2t(startMins), e: m2t(endMins), c: 'blue', l: '', sub: '', no: '' };
     onUpdate({ ...track, blocks: [...track.blocks, newBlock] });
     setEditBlock(newBlock);
+  };
+
+  // Vertical drag-to-reorder
+  const handleDragStart = e => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('trackId', track.id);
+    setTimeout(() => rowRef.current && rowRef.current.classList.add('dragging-row'), 0);
+  };
+  const handleDragEnd = () => {
+    rowRef.current && rowRef.current.classList.remove('dragging-row');
   };
 
   return (
@@ -444,8 +472,20 @@ function TrackRow({ track, day, nowFrac, onUpdate, onDelete }) {
           onDelete={() => { deleteBlock(editBlock.id); setEditBlock(null); }}
         />
       )}
-      <div className="track-row">
+      <div className="track-row" ref={rowRef}
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragOver={e => { e.preventDefault(); rowRef.current && rowRef.current.classList.add('drag-over'); }}
+        onDragLeave={() => rowRef.current && rowRef.current.classList.remove('drag-over')}
+        onDrop={e => {
+          e.preventDefault();
+          rowRef.current && rowRef.current.classList.remove('drag-over');
+          const fromId = e.dataTransfer.getData('trackId');
+          if (fromId && fromId !== track.id) onMoveUp(fromId, track.id);
+        }}>
         <div className="track-name-wrap">
+          <span className="drag-handle" title="Drag to reorder">⠿</span>
           <button className="track-del-btn" onClick={onDelete} title="Remove track">×</button>
           <input className="track-name-input" defaultValue={track.n} spellCheck={false}
             onBlur={e => onUpdate({ ...track, n: e.target.value })} />
@@ -523,8 +563,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v12', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v12'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v13', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v13'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
