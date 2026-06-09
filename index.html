@@ -49,7 +49,7 @@
   .canvas { background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; }
   @media (prefers-color-scheme: dark) { .canvas { background: #242422; border-color: rgba(255,255,255,0.08); } }
   .ruler { display: flex; border-bottom: 1px solid rgba(0,0,0,0.08); padding-left: 90px; padding-right: 8px; }
-  .htick { flex: 1; font-size: 9px; color: #888; padding: 5px 0 4px 3px; border-left: 1px solid rgba(0,0,0,0.06); white-space: nowrap; user-select: none; }
+  .htick { flex: 1; font-size: 12px; font-weight: 600; color: #555; padding: 6px 0 5px 4px; border-left: 1px solid rgba(0,0,0,0.06); white-space: nowrap; user-select: none; }
   .htick:first-child { border-left: none; }
 
   /* Tracks */
@@ -214,7 +214,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v22'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v23'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -670,8 +670,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v22', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v22'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v23', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v23'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
