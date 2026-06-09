@@ -205,7 +205,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v13'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v14'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -389,7 +389,7 @@ function DayView({ day, nowFrac, onUpdateDay }) {
       </div>
       <div className="canvas">
         <div className="ruler">
-          {Array.from({ length: day.eh - day.sh + 1 }, (_, i) => (
+          {Array.from({ length: day.eh - day.sh }, (_, i) => (
             <div key={i} className="htick">{String(day.sh + i).padStart(2, '0')}:00</div>
           ))}
         </div>
@@ -563,8 +563,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v13', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v13'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v14', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v14'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
