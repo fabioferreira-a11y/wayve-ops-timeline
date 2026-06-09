@@ -62,37 +62,37 @@
   .track-del-btn { opacity: 0; background: none; border: none; cursor: pointer; color: #888; font-size: 14px; padding: 0 2px; line-height: 1; transition: opacity .15s; }
   .track-row:hover .track-del-btn { opacity: 1; }
   .track-del-btn:hover { color: #E24B4A; }
-  .track-inner { position: relative; flex: 1; height: 36px; border-radius: 5px; background: #f0ede8; border: 1px solid rgba(0,0,0,0.08); margin-right: 32px; }
+  .track-inner { position: relative; flex: 1; height: 38px; border-radius: 5px; background: #f0ede8; border: 1px solid rgba(0,0,0,0.08); margin-right: 32px; }
   @media (prefers-color-scheme: dark) { .track-inner { background: #2c2c2a; border-color: rgba(255,255,255,0.07); } }
 
   /* Blocks */
-  .block { position: absolute; top: 2px; height: 32px; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; overflow: hidden; cursor: pointer; border: 1.5px solid transparent; user-select: none; transition: filter .1s; }
+  .block { position: absolute; top: 3px; height: 32px; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; overflow: hidden; cursor: pointer; border: 1.5px solid transparent; user-select: none; transition: filter .1s; }
   .block:hover { filter: brightness(.92); }
   .block.past { opacity: .32; }
   .block.selected { outline: 2.5px solid #378ADD; outline-offset: 1px; }
   .block-inner { overflow: hidden; pointer-events: none; flex: 1; min-width: 0; }
-  .block-label { font-size: 10px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
-  .block-sub { font-size: 9px; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .block-label { font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; letter-spacing: .01em; }
+  .block-sub { font-size: 10px; font-weight: 500; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .block-del { position: absolute; top: 1px; right: 2px; background: rgba(0,0,0,.22); border: none; border-radius: 3px; width: 13px; height: 13px; font-size: 9px; cursor: pointer; display: none; align-items: center; justify-content: center; color: #fff; padding: 0; line-height: 1; z-index: 4; }
   .block:hover .block-del { display: flex; }
   .resize-handle { position: absolute; right: 0; top: 0; bottom: 0; width: 7px; cursor: ew-resize; z-index: 3; }
 
   /* Block colors */
-  .bc-blue   { background: #E6F1FB; border-color: #B5D4F4; color: #0C447C; }
-  .bc-teal   { background: #E1F5EE; border-color: #9FE1CB; color: #085041; }
-  .bc-amber  { background: #FAEEDA; border-color: #FAC775; color: #633806; }
-  .bc-coral  { background: #FAECE7; border-color: #F5C4B3; color: #4A1B0C; }
-  .bc-purple { background: #EEEDFE; border-color: #CECBF6; color: #26215C; }
-  .bc-green  { background: #EAF3DE; border-color: #C0DD97; color: #173404; }
-  .bc-gray   { background: #F1EFE8; border-color: #D3D1C7; color: #2C2C2A; }
+  .bc-blue   { background: #2B7FCC; border-color: #1A5FA0; color: #fff; }
+  .bc-teal   { background: #1A9468; border-color: #0F6B4C; color: #fff; }
+  .bc-amber  { background: #D4820A; border-color: #A86208; color: #fff; }
+  .bc-coral  { background: #C94B25; border-color: #A33519; color: #fff; }
+  .bc-purple { background: #6558D4; border-color: #4A3FB8; color: #fff; }
+  .bc-green  { background: #528A18; border-color: #3A6610; color: #fff; }
+  .bc-gray   { background: #6E6C66; border-color: #52504B; color: #fff; }
   @media (prefers-color-scheme: dark) {
-    .bc-blue   { background: #0C447C; border-color: #185FA5; color: #B5D4F4; }
-    .bc-teal   { background: #085041; border-color: #0F6E56; color: #9FE1CB; }
-    .bc-amber  { background: #633806; border-color: #854F0B; color: #FAC775; }
-    .bc-coral  { background: #4A1B0C; border-color: #993C1D; color: #F5C4B3; }
-    .bc-purple { background: #26215C; border-color: #534AB7; color: #CECBF6; }
-    .bc-green  { background: #173404; border-color: #3B6D11; color: #C0DD97; }
-    .bc-gray   { background: #2C2C2A; border-color: #5F5E5A; color: #D3D1C7; }
+    .bc-blue   { background: #3B8FDC; border-color: #2B7FCC; color: #fff; }
+    .bc-teal   { background: #1EA878; border-color: #1A9468; color: #fff; }
+    .bc-amber  { background: #E8920C; border-color: #D4820A; color: #fff; }
+    .bc-coral  { background: #E05530; border-color: #C94B25; color: #fff; }
+    .bc-purple { background: #7A6EE0; border-color: #6558D4; color: #fff; }
+    .bc-green  { background: #5E9E1C; border-color: #528A18; color: #fff; }
+    .bc-gray   { background: #888780; border-color: #6E6C66; color: #fff; }
   }
 
   /* Now / deadline lines */
@@ -162,7 +162,7 @@
 const { useState, useEffect, useRef, useCallback } = React;
 
 const COLORS = ['blue','teal','amber','coral','purple','green','gray'];
-const CHX = { blue:'#85B7EB', teal:'#5DCAA5', amber:'#EF9F27', coral:'#F0997B', purple:'#AFA9EC', green:'#97C459', gray:'#B4B2A9' };
+const CHX = { blue:'#2B7FCC', teal:'#1A9468', amber:'#D4820A', coral:'#C94B25', purple:'#6558D4', green:'#528A18', gray:'#6E6C66' };
 
 const DEFAULT = { days: [
   { id:'d1', label:'Demo day', badge:'DEMO DAY', bgs:'#E1F5EE', bgc:'#085041', sh:6, eh:15, dls:[{t:'12:30',l:'Arrival deadline'}], tracks:[
@@ -199,7 +199,7 @@ const frac = (t, sh, eh) => Math.max(0, Math.min(1, (t2m(t) - sh*60) / ((eh-sh)*
 const clone = o => JSON.parse(JSON.stringify(o));
 
 function loadData() {
-  try { const s = localStorage.getItem('wayve_ops_v10'); if (s) return JSON.parse(s); } catch(e) {}
+  try { const s = localStorage.getItem('wayve_ops_v11'); if (s) return JSON.parse(s); } catch(e) {}
   return clone(DEFAULT);
 }
 
@@ -523,8 +523,8 @@ function App() {
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2200); };
 
   const updateData = newData => { setData(newData); setDirty(true); };
-  const saveData = () => { localStorage.setItem('wayve_ops_v10', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
-  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v10'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
+  const saveData = () => { localStorage.setItem('wayve_ops_v11', JSON.stringify(data)); setDirty(false); showToast('Saved'); };
+  const resetData = () => { if (!confirm('Reset to default?')) return; localStorage.removeItem('wayve_ops_v11'); setData(clone(DEFAULT)); setDirty(false); showToast('Reset'); };
 
   const updateDay = newDay => updateData({ ...data, days: data.days.map(d => d.id === newDay.id ? newDay : d) });
 
